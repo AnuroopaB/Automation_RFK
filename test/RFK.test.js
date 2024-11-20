@@ -433,27 +433,29 @@ describe('Verify Status of Sources in loopback RFK', () => {
     }, 10000);
   });
 });
-describe('Clear All', () => {
-  it(`Clearing all resources`, async () => {
-    if (!allTestsPassed) {
-      console.log("Skipping resource cleanup because some tests failed.");
-      expect(allTestsPassed).toBe(true);
-    }
-    try {
-      let res = await deleteCall(`${BASE_URL_RFK2}flows/${flowId2}`, header2);
-      expect(res.status).toBe(200);
-      expect(res.data).toContain("successfully deleted");
-      res = await deleteCall(`${BASE_URL_RFK1}flows/${flowId}`, header1);
-      expect(res.status).toBe(200);
-      expect(res.data).toContain("successfully deleted");
-      for (const Id of Object.values(inputIds3)) {
-        //console.log(Id)
-        res = await deleteCall(`${BASE_URL_RFK1}inputs/${Id}`, header1);
+if(config.Clear_All == "true"){
+  describe('Clear All', () => {
+    it(`Clearing all resources`, async () => {
+      if (!allTestsPassed) {
+        console.log("Skipping resource cleanup because some tests failed.");
+        expect(allTestsPassed).toBe(true);
+      }
+      try {
+        let res = await deleteCall(`${BASE_URL_RFK2}flows/${flowId2}`, header2);
         expect(res.status).toBe(200);
         expect(res.data).toContain("successfully deleted");
+        res = await deleteCall(`${BASE_URL_RFK1}flows/${flowId}`, header1);
+        expect(res.status).toBe(200);
+        expect(res.data).toContain("successfully deleted");
+        for (const Id of Object.values(inputIds3)) {
+          //console.log(Id)
+          res = await deleteCall(`${BASE_URL_RFK1}inputs/${Id}`, header1);
+          expect(res.status).toBe(200);
+          expect(res.data).toContain("successfully deleted");
+        }
+      } catch (err) {
+        throw new Error(err);
       }
-    } catch (err) {
-      throw new Error(err);
-    }
-  }, 500000);
-});
+    }, 500000);
+  });
+}
