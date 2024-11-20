@@ -11,8 +11,7 @@ const headerTemplate = {
   'Authentication-Type': 'DB',
   'Authorization': ''
 }
-let UDPinBT = 0;
-let RTPinBT = 0;
+let UDPinBT, RTPinBT, SRToutBT, RISTSoutBT, RISTMoutBT = 0;
 async function login(URL){
     const loginPayload = {
       username: 'admin',
@@ -55,14 +54,15 @@ async function statusCheck(URL, ID, int, header){  //, headerO, IDo) {
                 stat = response.data.statistics.udpStatistics.inputPresent;
                 if (stat == true){
                   UDPinBT = response.data.statistics.tsStatistics.bitrate;
-                  console.log(UDPinBT)
+                  console.log("UDP input BT : ",UDPinBT);
+                  RTPinBT = UDPinBT;
                 }
             }else{
                 stat = response.data.statistics.udpStatistics.outputPresent;
                 if (stat == true){
                   if (response.data.statistics.tsStatistics.bitrate >= UDPinBT*0.5){
                     stat = true;
-                    console.log(response.data.statistics.tsStatistics.bitrate);
+                    console.log("UDP Out BT: ", response.data.statistics.tsStatistics.bitrate);
                   }else{
                     stat = false;
                   }
@@ -74,12 +74,14 @@ async function statusCheck(URL, ID, int, header){  //, headerO, IDo) {
                 stat = response.data.statistics.udpStatistics.inputPresent;
                 if (stat == true){
                   RTPinBT = response.data.statistics.tsStatistics.bitrate;
+                  console.log("RTP input BT : ",RTPinBT);
                 }
             }else{
                 stat = response.data.statistics.rtpStatistics.outputPresent;
                 if (stat == true){
                   if (response.data.statistics.tsStatistics.bitrate >= RTPinBT*0.5){
                     stat = true;
+                    console.log("RTP output BT : ", response.data.statistics.tsStatistics.bitrate);
                   }else{
                     stat = false;
                   }
@@ -88,12 +90,54 @@ async function statusCheck(URL, ID, int, header){  //, headerO, IDo) {
         }
         if(ID.includes("SRT")){
             stat = response.data.statistics.srtStatistics.status;
+            if( int == 1 && stat == "CONNECTED"){
+              if (response.data.statistics.tsStatistics.bitrate >= SRToutBT*0.5){
+                stat = "CONNECTED";
+                console.log("SRT input BT : ", response.data.statistics.tsStatistics.bitrate);
+              }else{
+                stat = "DISCONNECTED";
+              }
+            }if( int != 1 && stat == "CONNECTED")
+            {
+              SRToutBT = response.data.statistics.tsStatistics.bitrate;
+              console.log("SRT OUTput BT : ", SRToutBT);
+            }
         }
         if(ID.includes("RIST")){
             stat = response.data.statistics.ristStatistics.connectionStatus;
+            if (ID.includes("MAIN")){
+              if( int == 1 && stat == "CONNECTED"){
+                if (response.data.statistics.tsStatistics.bitrate >= RISTMoutBT*0.5){
+                  stat = "CONNECTED";
+                  console.log("RIST MAIN input BT : ", response.data.statistics.tsStatistics.bitrate);
+                }else{
+                  stat = "DISCONNECTED";
+                }
+              }
+              if( int != 1 && stat == "CONNECTED")
+              {
+                RISTMoutBT = response.data.statistics.tsStatistics.bitrate;
+                console.log("RIST MAIN OUTput BT : ", RISTMoutBT);
+              }
+            }
+            else{
+              if( int == 1 && stat == "CONNECTED"){
+                if (response.data.statistics.tsStatistics.bitrate >= RISTSoutBT*0.5){
+                  stat = "CONNECTED";
+                  console.log("RIST SIMPLE input BT : ", response.data.statistics.tsStatistics.bitrate);
+                }else{
+                  stat = "DISCONNECTED";
+                }
+              }
+              if( int != 1 && stat == "CONNECTED")
+              {
+                RISTSoutBT = response.data.statistics.tsStatistics.bitrate;
+                console.log("RIST SIMPLE OUTput BT : ", RISTSoutBT);
+              }
+            }
         }
-        const bitrate = response.data.statistics.tsStatistics.bitrate;//need null check
-        if((stat === true || stat === "CONNECTED") && (bitrate)>0){
+        //const bitrate = response.data.statistics.tsStatistics.bitrate;//need null check
+        if((stat === true || stat === "CONNECTED")){
           check = true;
         }
         //CCR
@@ -149,4 +193,3 @@ async function resourceExists(Id, URL, indicator, header) {
     }
   }
 module.exports = {initialize, headers, postCall, sourceUp, statusCheck, getId, deleteCall};
-
