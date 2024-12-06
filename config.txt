@@ -1,4 +1,5 @@
-BASE_URL_RFK1 = https://172.16.151.218
-BASE_URL_RFK2 = https://172.16.151.226
-multicast = 239.153.15.1
+BASE_URL_RFK1 = http://172.16.121.166:5000
+BASE_URL_RFK2 = http://172.17.166.167:5000
+multicast = 239.121.181.10
 Clear_All = false
+Timeout = 50000
